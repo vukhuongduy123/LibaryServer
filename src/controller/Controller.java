@@ -1,43 +1,35 @@
 package controller;
 
 import SQLConnection.SQLConnection;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import models.BooksInfoModel;
+import models.MessageModel;
+import models.Ultis;
 
-import javax.sound.midi.SysexMessage;
 import java.sql.*;
+import java.util.List;
 
 public class Controller {
-    public String manageMessage(String msg, Object[] args) {
-        String res = "";
+
+    public static MessageModel manageMessage(String msg, Object[] args) {
         switch (msg) {
             case Message.FIND_BOOK:
-                res = findBookMessage(args);
-                break;
+                return findBookMessage(args);
         }
-        return res;
+        return null;
     }
 
-    private String findBookMessage(Object[] args) {
+    private static MessageModel findBookMessage(Object[] args) {
         try {
             Connection connection = SQLConnection.getConnection();
             final String arg = (String) args[0];
             final String sqlQuery = "select * from BooksInfo where name like " + "'%" + arg + "%'";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
-            JsonArray json = new JsonArray();
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            while(resultSet.next()) {
-                int numColumns = resultSetMetaData.getColumnCount();
-                JsonObject obj = new JsonObject();
-                for (int i = 1; i <= numColumns; i++) {
-                    final String column_name = resultSetMetaData.getColumnName(i);
-                    Object data =  resultSet.getObject(column_name);
-                    obj.addProperty(column_name, data == null ? "null" : data.toString());
-                }
-                json.add(obj);
-            }
-            return json.toString();
+            List<BooksInfoModel> booksInfos = Ultis.mappingModelFromResultSet(resultSet, BooksInfoModel.class);
+            MessageModel messageModel = new MessageModel();
+            messageModel.setMessage("success");
+            messageModel.setArgs(booksInfos.toArray());
+            return messageModel;
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();

@@ -1,11 +1,13 @@
 import SQLConnection.SQLConnection;
-import controller.Controller;
-import controller.Message;
+import models.MessageModel;
+import socketServer.Server;
 
 public class ServerApp {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         SQLConnection.initConnection();
-        Controller controller = new Controller();
-        controller.manageMessage(Message.FIND_BOOK, new Object[]{"C"});
+        System.out.println(MessageModel.class.getCanonicalName());
+        System.out.println("socket server listening");
+        Server server = new Server();
+        server.listening();
     }
 }

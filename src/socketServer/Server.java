@@ -1,6 +1,11 @@
 package socketServer;
 
+import controller.Controller;
+import models.MessageModel;
+
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -24,12 +29,17 @@ public class Server {
         try {
             while (true) {
                 Socket socket = serverSocket.accept();
+                System.out.println("socket connected");
                 acceptedSocket.add(socket);
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                MessageModel message = (MessageModel) objectInputStream.readObject();
 
-
+                MessageModel res = Controller.manageMessage(message.getMessage(), message.getArgs());
+                objectOutputStream.writeObject(res);
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
