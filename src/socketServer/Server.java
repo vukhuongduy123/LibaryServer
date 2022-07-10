@@ -1,8 +1,5 @@
 package socketServer;
 
-import controller.Controller;
-import models.MessageModel;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -33,10 +30,8 @@ public class Server {
                 acceptedSocket.add(socket);
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                MessageModel message = (MessageModel) objectInputStream.readObject();
-
-                MessageModel res = Controller.manageMessage(message.getMessage(), message.getArgs());
-                objectOutputStream.writeObject(res);
+                Thread thread = new Thread(new ClientHandler(objectInputStream, objectOutputStream, socket));
+                thread.start();
 
             }
         } catch (Exception e) {
