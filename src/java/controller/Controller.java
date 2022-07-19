@@ -1,30 +1,30 @@
 package controller;
 
-import SQLConnection.SQLConnection;
+import connection.SQLConnection;
 import models.BooksInfoModel;
+import models.LoginModel;
 import models.MessageModel;
 import models.Ultis;
+import sercurity.CallbackHandlerImpl;
+import sercurity.PrincipalImpl;
 
+import javax.security.auth.login.LoginContext;
 import java.io.FileOutputStream;
 import java.sql.*;
 import java.util.List;
 
 public class Controller {
-
+    private static LoginContext loginContext;
     public static MessageModel manageMessage(String msg, Object[] args) {
-        switch (msg) {
-            case Message.FIND_BOOKS:
-                return findBookMessage(args);
-            case Message.DELETE_BOOK:
-                return deleteBookMessage(args);
-            case Message.OPEN:
-                return openBookMessage(args);
-            case Message.UPDATE_BOOK:
-                return updateBookMessage(args);
-            case Message.EDIT_BOOK:
-                return editBookMessage(args);
-        }
-        return null;
+        return switch (msg) {
+            case Message.FIND_BOOKS -> findBookMessage(args);
+            case Message.DELETE_BOOK -> deleteBookMessage(args);
+            case Message.OPEN -> openBookMessage(args);
+            case Message.UPDATE_BOOK -> updateBookMessage(args);
+            case Message.EDIT_BOOK -> editBookMessage(args);
+            case Message.LOGIN -> login(args);
+            default -> null;
+        };
     }
 
     private static MessageModel findBookMessage(Object[] args) {
@@ -106,8 +106,7 @@ public class Controller {
             preparedStatement.setDate(7, new java.sql.Date(booksInfoModel.getAddedTime().getTime()));
             preparedStatement.setString(8, url);
             boolean res = preparedStatement.execute();
-            MessageModel messageModel = new MessageModel(String.valueOf(res), new Object[]{booksInfoModel});
-            return messageModel;
+            return new MessageModel(String.valueOf(res), new Object[]{booksInfoModel});
 
         } catch (Exception throwables) {
             throwables.printStackTrace();
@@ -137,12 +136,31 @@ public class Controller {
             preparedStatement.setInt(7, booksInfoModel.getId());
             int res = preparedStatement.executeUpdate();
 
-            MessageModel messageModel = new MessageModel(String.valueOf(res), new Object[]{booksInfoModel});
-            return messageModel;
+            return new MessageModel(String.valueOf(res), new Object[]{booksInfoModel});
 
         } catch (Exception throwables) {
             throwables.printStackTrace();
         }
         return null;
+    }
+
+    private static MessageModel login(Object[] args) {
+        try {
+            LoginModel loginModel = (LoginModel) args[0];
+            CallbackHandlerImpl callbackHandler = new CallbackHandlerImpl();
+            callbackHandler.setUsernameAndPassword(loginModel.getUsername(), loginModel.getPassword());
+            loginContext = new LoginContext("JaasConfig", callbackHandler);
+            try {
+                loginContext.login();
+                if (loginContext.getSubject().getPrincipals().contains(new PrincipalImpl(loginModel.getUsername())))
+                    return new MessageModel("Login success", null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new MessageModel("Login failed", null);
     }
 }

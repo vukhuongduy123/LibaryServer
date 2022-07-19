@@ -6,4 +6,5 @@ public class Message {
     public static final String UPDATE_BOOK = "update book";
     public static final String OPEN = "open book";
     public static final String EDIT_BOOK = "edit book";
+    public static final String LOGIN = "login";
 }

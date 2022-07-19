@@ -1,4 +1,4 @@
-package socketServer;
+package server;
 
 import controller.Controller;
 import models.MessageModel;
@@ -20,7 +20,6 @@ public class ClientHandler implements Runnable{
     @Override
     public void run() {
         while (true) {
-
             MessageModel message;
             try {
                 message = (MessageModel) objectInputStream.readObject();
@@ -36,7 +35,6 @@ public class ClientHandler implements Runnable{
                     ioException.printStackTrace();
                 }
             }
-
         }
     }
 }
